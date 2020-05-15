@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <!-- import CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+</head>
+<body>
+<div id="app">
+
+    <h1 style="text-align: center;">Dubbo Test Tool</h1>
+
+    <el-form ref="form" :model="form" label-width="200px" style="width: 1200px;margin: 0px auto;">
+        <el-form-item label="Dubbo地址">
+            <el-input v-model="form.url" placeholder="dubbo://localhost:21870" style="width: 800px;"></el-input>
+        </el-form-item>
+        <el-form-item label="接口全名">
+            <el-input v-model="form.interfaceName" placeholder="com.xxx.XXXService" style="width: 800px;"></el-input>
+        </el-form-item>
+        <el-form-item label="方法名">
+            <el-input v-model="form.methodName" placeholder="getById" style="width: 800px;"></el-input>
+        </el-form-item>
+        <el-form-item label="超时(毫秒)：">
+            <el-input v-model="form.timeout" style="width: 800px;"></el-input>
+        </el-form-item>
+        <el-form-item label="请求头">
+            <div v-for="item in form.headers" style="padding: 5px 0px;">
+                <el-input v-model="item.name" placeholder="key" style="width: 400px;"></el-input>
+                <el-input v-model="item.value" placeholder="value" style="width: 400px;"></el-input>
+            </div>
+            <div>
+                <el-button icon="el-icon-plus" circle @click="handleAddHeader"></el-button>
+            </div>
+        </el-form-item>
+        <el-form-item label="请求参数">
+            <div v-for="item in form.params">
+                <div style="padding: 5px 0px;">
+                    <el-input v-model="item.name" style="width: 800px;" placeholder="参数类型"></el-input>
+                </div>
+                <div style="padding: 5px 0px;">
+                    <el-input type="textarea" :rows="5" v-model="item.value" style="width: 800px;"
+                              placeholder="参数值(Json格式数据)"></el-input>
+                </div>
+            </div>
+            <div>
+                <el-button icon="el-icon-plus" circle @click="handleAddParam"></el-button>
+            </div>
+        </el-form-item>
+
+        <el-form-item>
+            <el-button type="primary" @click="handleInvoke" :loading="invoking">执行</el-button>
+            {{result.time}}ms
+        </el-form-item>
+        <el-form-item label="执行结果">
+            <el-input type="textarea" :rows="20" v-model="result.data" style="width: 800px;"></el-input>
+        </el-form-item>
+
+    </el-form>
+
+</div>
+</body>
+<script src="https://unpkg.com/vue/dist/vue.js"></script>
+<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<script>
+    new Vue({
+        el: '#app',
+        data: function () {
+            return {
+                invoking:false,
+                result: {
+                    time: 0,
+                    data: ''
+                },
+                form: {
+                    timeout: 60000,
+                    headers: [{}],
+                    params: [{}]
+                }
+            }
+        },
+        methods: {
+            handleAddHeader() {
+                this.form.headers.push({});
+            },
+            handleAddParam() {
+                this.form.params.push({});
+            },
+            handleInvoke() {
+                var that=this;
+                that.invoking=true;
+                localStorage.setItem("dubbo-test-cache",JSON.stringify(this.form));
+                axios.post('/dubbotest/invoke',this.form).then(function (response) {
+                    that.invoking=false;
+                    that.result.data=JSON.stringify(response.data);
+                    that.result.time=response.headers.time;
+                }).catch(function (error) {
+                    that.invoking=false;
+                    that.result.data=JSON.stringify(error);
+                });
+            }
+        },
+        mounted(){
+            var cache=localStorage.getItem("dubbo-test-cache");
+            if(cache){
+                this.form=JSON.parse(cache);
+            }
+        }
+    })
+</script>
+</html>
