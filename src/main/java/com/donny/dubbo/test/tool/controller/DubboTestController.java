@@ -1,6 +1,3 @@
-/*
- * 深圳市灵智数科有限公司版权所有.
- */
 package com.donny.dubbo.test.tool.controller;
 
 import com.alibaba.fastjson.JSON;
@@ -19,14 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.*;
 
-/**
- * 功能说明
- * <p>
- *
- * @author 唐陆军
- * @version 1.0.0
- * @date 2020/5/8
- */
+
 @RestController
 public class DubboTestController {
 
